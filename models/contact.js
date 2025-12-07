@@ -1,6 +1,6 @@
 
 const mongoose = require("mongoose")
-const { validate } = require("../../hello/models/note")
+
 
 mongoose.set("strictQuery", false)
 
