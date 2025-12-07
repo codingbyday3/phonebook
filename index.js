@@ -27,14 +27,6 @@ app.get("/api/persons",(request, response, next)=>{
 
 })
 
-app.get("/info", (request, response) =>{
-    const recivedRequest = new Date()
-    response.send(`
-        <p>Phonebook has info for ${phonebook.length} people </p>
-        <p>${recivedRequest}</p>
-    ` )
-})
-
 app.get("/api/persons/:id", (request, response, next) => {
 
     Contact.findById(request.params.id)
@@ -55,7 +47,7 @@ app.delete("/api/persons/:id", (request, response, next) =>{
 
 })
 
-app.post("/api/persons", (request, response) =>{
+app.post("/api/persons", (request, response, next) =>{
     const body = request.body
  
     if(!body.name || !body.number){
@@ -69,9 +61,11 @@ app.post("/api/persons", (request, response) =>{
         number: body.number
     })
 
-    contact.save().then(savedContact =>{
-        response.json(savedContact)
-    })
+    contact.save()
+        .then(savedContact =>{
+            response.json(savedContact)
+        })
+        .catch(error => next(error))
 
 })
 
@@ -95,14 +89,16 @@ app.put("/api/persons/:id", (request, response, next)=>{
 
 })
 
-const errorHandler = (error, request, response, next) =>{
-    console.log(error)
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
 
-    if(error.name === "CastError"){
-        return response.status(400).send({error: "malformatted id"})
-    }
-  
-    next(error)
+  if (error.name === "CastError") {
+    return response.status(400).json({ error: "malformatted id" })
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: String(error) })
+  }
+
+  next(error)
 }
 
 app.use(errorHandler)

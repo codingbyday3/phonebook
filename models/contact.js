@@ -1,5 +1,6 @@
 
 const mongoose = require("mongoose")
+const { validate } = require("../../hello/models/note")
 
 mongoose.set("strictQuery", false)
 
@@ -15,8 +16,22 @@ mongoose.connect(url, {family:4})
     })
 
 const contactSchema = mongoose.Schema({
-    name: String,
-    number: String,
+    name: {
+        type: String,
+        minLength: 3,
+        required: true
+    },
+    number: {
+        type: String,
+        validate: {
+            validator: function(v) {
+                return /^\d{2,3}-\d+$/.test(v)
+            },
+            message: props => `${props.value} is not a valid phone number`
+        },
+        minLength:8,
+        required: true
+    },
 })
 
 contactSchema.set("toJSON", {

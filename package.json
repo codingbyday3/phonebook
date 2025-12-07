@@ -11,7 +11,7 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "build:ui": "rm -rf dist && cd ../../frontend/phonebook && npm run build && cp -r dist ../../backend/phonebook",
-    "deploy:full": "npm run build:ui && npm add . && npm commit -m uibuild && git push"
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push "
   },
   "dependencies": {
     "dotenv": "^17.2.3",
