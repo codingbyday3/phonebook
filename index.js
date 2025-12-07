@@ -1,5 +1,8 @@
+require("dotenv").config()
 const express = require("express")
 const morgan = require("morgan")
+const Contact = require("./models/contact")
+
 
 
 const app = express()
@@ -10,47 +13,19 @@ app.use(express.urlencoded({extended: true}))
 app.use(express.static("dist"))
 
 
-let phonebook = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
-
 morgan.token("body", (req) =>{
     return JSON.stringify(req.body)
 })
 
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms :body"))
 
-const generateId = () => {
-    const randomId = Math.floor(Math.random()*100000000)
-    return String(randomId) 
-}
-
-const isUnique = (name) =>{
-    return phonebook.some(person => person.name === name)
-}
-
 
 app.get("/api/persons",(request, response)=>{
-    response.json(phonebook)
+    Contact.find({}).then(contacts =>{
+
+        response.json(contacts)
+    })
+
 })
 
 app.get("/info", (request, response) =>{
@@ -86,24 +61,20 @@ app.post("/api/persons", (request, response) =>{
        return response.status(404).json({
             error: "Content missing"
         })
-    }else if(isUnique(body.name)){
-        return response.status(404).json({
-            error: "Name must be unique"
-        })
     }
 
-    const contact = {
-        id: generateId(),
+    const contact = new Contact({
         name: body.name,
         number: body.number
-    }
+    })
 
-    phonebook = phonebook.concat(contact)
+    contact.save().then(savedContact =>{
+        response.json(savedContact)
+    })
 
-    response.json(contact)
 })
 
-const PORT = 3001
+const PORT = process.env.PORT
 app.listen(PORT, ()=>{
     console.log(`Server is running on port ${PORT}`)
 })
